@@ -1,0 +1,21 @@
+{
+	"name": "MyChat",
+	"version": "0.0.1",
+	"description": "Node.JS Realtime Chat",
+	"author": "Abdeljalil Salhi",
+	"private": "true",
+	"scripts": {
+		"start": "node app.js"
+	},
+	"dependencies": {
+		"express": "4.17.1",
+		"mongoose": "^5.10.7",
+		"socket.io": "2.3.0"
+	},
+	"contributors": [
+		{
+			"name": "Abdeljalil Salhi",
+			"email": "abdousalhi868@gmail.com"
+		}
+	]
+}

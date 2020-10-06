@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MyChat</title>
+		<meta charset="UTF-8"/>
+		<link rel="stylesheet" type="text/css" href="/css/style.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/w3.css"/>
+		<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css"/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+		<link rel="shortcut icon" href="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg"/>
+	</head>
+	<body>
+		<div id="loginWrap">
+			<form id="loginInput" class="border rounded border-dark">
+				<center>
+					<span class="navbar-brand">
+						<img src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" width="100" height="100" class="d-inline-block" draggable=false>
+						<h1 class="d-inline-block display-2 align-middle">MyChat</h1>
+					</span>
+					<p id="loginError"></p>
+					<input type="text" placeholder="Your username..." id="username" class="form-control"/>
+					<button type="submit" class="btn" style="outline:none">
+						<i class="material-icons align-middle" style="font-size:36px;color:#838b94">login</i>
+					</button>
+				</center>
+			</form>
+		</div>
+		<div id="contentWrap" style="display:none">
+			<div id="chat">
+				<ul id="messages"></ul>
+			</div>
+			<div id="users">
+				<span class="navbar-brand">
+					<img src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" width="50" height="50" class="d-inline-block" draggable=false>
+					<h1 class="d-inline-block display-4 align-middle">MyChat</h1>
+				</span>
+				<h5 class="title1">Users - <span id="connections"></span></h5>
+				<hr width="70%" color="#838b94"/>
+				<ul id="userslist"></ul>
+			</div>
+			<form id="sendInput">
+				<input type="text" id="input" class="border rounded border-dark" placeholder="Your message here..." autocomplete="off"/>
+				<button type="submit" id="submit" class="btn">
+					<i class="material-icons align-middle" style="font-size:36px;color:#838b94">send</i>
+				</button>
+			</form>
+		</div>
+		<script src="/js/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			jQuery(function($){
+				var socket = io.connect(),
+					$loginForm = $('#loginInput'),
+					$loginError = $('#loginError'),
+					$username = $('#username'),
+					$users = $('#userslist'),
+					$inputForm = $('#sendInput'),
+					$input = $('#input'),
+					$chat = $('#messages');
+				var COLORS = [
+					'#e74c3c', '#e67e22', '#f1c40f',
+					'#ad1457', '#3498db', '#2ecc71'
+				];
+				
+				$loginForm.submit(function(e){
+					e.preventDefault();
+					var COLOR = COLORS[Math.floor(Math.random() * COLORS.length)];
+					socket.emit('new user', {name:$username.val().replace(' ', '_'), color:COLOR}, function(data){
+						if(data){
+							$('#loginWrap').hide();
+							$('#contentWrap').show();
+						}else{
+							$loginError.text('Username already taken.');
+						}
+					});
+					$username.val('');
+				});
+				
+				socket.on('users', function(data){
+					var html = '';
+					for(i=0; i<data.length; i++){
+						html += '<li class="user">' + data[i] + '</li>';
+					}
+					$users.html(html);
+				});
+				socket.on('connections', function(data){
+					$('#connections').text(data);
+				});
+				
+				socket.on('user joined', function(data){
+					document.getElementById('beepLog').play();
+					$chat.append('<li class="log">[' + data.time + ']&nbsp;<b style="color:' + data.color + '">' + data.user + '</b> joined!</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				socket.on('user left', function(data){
+					document.getElementById('beepLog').play();
+					$chat.append('<li class="log">[' + data.time + ']&nbsp;<b style="color:' + data.color + '">' + data.user + '</b> left!</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				socket.on('you joined', function(data){
+					document.getElementById('beepLog').play();
+					$chat.append('<li class="log">[' + data + ']&nbsp;you joined!</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+					
+				$inputForm.submit(function(e){
+					e.preventDefault();
+					if($input.val() != ''){
+						socket.emit('send message', $input.val(), function(data){
+							$chat.append('<li class="error">' + data + '</li>');
+						});
+						$input.val('');
+					}
+				});
+				
+				socket.on('load old msgs', function(docs){
+					for(i=docs.length-1; i>=0; i--){
+						$chat.append('<li class="message"><b style="color:' + docs[i].color + '">' + docs[i].user + '</b>&nbsp;&nbsp;<i class="time">' + docs[i].time + '</i><br>' + docs[i].msg + '</li>');
+					}
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				
+				socket.on('new message', function(data){
+					document.getElementById('beepMessage').play();
+					$chat.append('<li class="message"><b style="color:' + data.color + '">' + data.user + '</b>&nbsp;&nbsp;<i class="time">' + data.time + '</i><br>' + data.msg + '</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				
+				socket.on('whisperFrom', function(data){
+					document.getElementById('beepMessage').play();
+					$chat.append('<li class="whisper">(Whisper) from <b style="color:' + data.color + '">' + data.user + '</b>&nbsp;&nbsp;<i class="time">' + data.time + '</i><br>' + data.msg + '</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				socket.on('whisperTo', function(data){
+					document.getElementById('beepMessage').play();
+					$chat.append('<li class="whisper">(Whisper) to <b style="grey">' + data.user + '</b>&nbsp;&nbsp;<i class="time">' + data.time + '</i><br>' + data.msg + '</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				socket.on('whisperHelp', function(data){
+					document.getElementById('beepHelp').play();
+					$chat.append('<li class="log">[' + data + ']&nbsp;Usage: /w [USER] [MESSAGE]</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				
+				socket.on('scroll', function(){
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+				socket.on('help', function(data){
+					document.getElementById('beepHelp').play();
+					$chat.append('<li class="log">[' + data + ']&nbsp;&nbsp;Help:</li>');
+					$chat.append('<li class="log">/w [USER] [MESSAGE] - Whisper to someone</li>');
+					$chat.append('<li class="log">/shrug - Shrug Emoji</li>');
+					$chat.append('<li class="log">/sc - Scroll to the top Bottom of Chat</li>');
+					$chat.animate({scrollTop: document.body.scrollHeight},"fast");
+				});
+			});
+		</script>
+		<audio id="beepMessage" src="/audio/open-ended.ogg" autoplay="false"></audio>
+		<audio id="beepLog" src="/audio/plucky.ogg" autoplay="false"></audio>
+		<audio id="beepHelp" src="/audio/case-closed.ogg" autoplay="false"></audio>
+	</body>
+</html>
