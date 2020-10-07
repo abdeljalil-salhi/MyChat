@@ -55,8 +55,8 @@ it must look like this:
   - Whisper (private messaging) within chatroom
   - Server logs whenever a user join or leave
   - List (+number) of connected users
-More features are coming soon...
 
+More features are coming soon...
 
 [node]: <https://nodejs.org/en/download/>
 [mongo]: <https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/>
