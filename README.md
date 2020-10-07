@@ -41,7 +41,21 @@ If you're not under Windows, you have to open the ```mongod.exe```'s path and ex
 Finally, you can use the ```start.bat``` file to run the app, or ```$ npm start``` in the terminal;
 it must look like this:
 
+![image](https://user-images.githubusercontent.com/65598953/95274491-e69ce000-083d-11eb-9168-8535406fa30b.png)
 
+# Chat Commands
+  - ```/help``` - Show the help list
+  - ```/w [USER] [MESSAGE]``` - Whisper to someone
+  - ```/shrug``` - Use the Shrug Emoji
+  - ```/sc``` - Scroll to the top Bottom of Chat
+
+# Features
+  - Realtime Chat with unlimited users
+  - Data storage up to infinite messages (Note that only last 20 messages are displayed once connected, it can be changed in ```app.js``` - **line 40**, delete the ```.limit(20)``` if you want to display all the stored messages)
+  - Whisper (private messaging) within chatroom
+  - Server logs whenever a user join or leave
+  - List (+number) of connected users
+More features are coming soon...
 
 
 [node]: <https://nodejs.org/en/download/>
