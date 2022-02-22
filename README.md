@@ -23,7 +23,6 @@ MongoDB -> [Get MongoDB][mongo]
   - Type the following commands:
 
 ```sh
-$ npm init
 $ npm install
 $ npm install mongoose
 ```
