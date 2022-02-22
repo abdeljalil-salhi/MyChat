@@ -1,5 +1,5 @@
 # MyChat
-Realtime Chat using socket.io (NodeJS + MongoDB)
+> Realtime Chat using socket.io (NodeJS + MongoDB)
 
 **LOGIN PAGE**
 
